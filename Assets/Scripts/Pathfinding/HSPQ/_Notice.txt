@@ -1,0 +1,3 @@
+﻿All classes in this folder were made by github user:
+https://github.com/BlueRaja
+All credit to them. Distributed under the MIT license.
