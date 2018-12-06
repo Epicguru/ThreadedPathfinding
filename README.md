@@ -1,7 +1,9 @@
 # Threaded Pathfinding
 This is a multithreaded, request-callback based implementation of the A* pathfinding algorithm. Intended for use with the Unity (2D) game engine. Requires a __2D tile-based map__, but can be adapted to work with hexagonal or even triagular maps.
 
-__Important: This is not a 'drag and drop' solution. You will need to be comfortable with fairly advanced programming and problem solving to make this work with your project__
+[Click here](https://github.com/Epicguru/ThreadedPathfinding/blob/master/Documentation%20Images/Benchmarks.md) for benchmarks (with pictures :D).
+
+__Important: This is not a 'drag and drop' solution. You will need to be comfortable with fairly advanced programming concepts and knowlege to make this work with your project__
 
 ## Features
 * Can use 1-16 threads to do pathfinding on.
