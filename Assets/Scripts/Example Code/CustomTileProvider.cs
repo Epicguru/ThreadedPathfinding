@@ -1,4 +1,5 @@
 ﻿
+using ThreadedPathfinding;
 using UnityEngine;
 
 public class CustomTileProvider : TileProvider

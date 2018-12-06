@@ -1,11 +1,28 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using ThreadedPathfinding;
+using ThreadedPathfinding.Internal;
 using UnityEngine;
 
 public class PathfindingManager : MonoBehaviour
 {
-    public static PathfindingManager Instance;
+    public static PathfindingManager Instance
+    {
+        get
+        {
+            if(_instance == null)
+            {
+                _instance = GameObject.FindObjectOfType<PathfindingManager>();
+            }
+            return _instance;
+        }
+        private set
+        {
+            _instance = value;
+        }
+    }
+    private static PathfindingManager _instance;
 
     public TileProvider Provider
     {

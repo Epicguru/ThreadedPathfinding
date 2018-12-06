@@ -1,4 +1,7 @@
 ﻿
 using System.Collections.Generic;
 
-public delegate void PathFound(PathfindingResult result, List<PNode> nodes);
+namespace ThreadedPathfinding
+{
+    public delegate void PathFound(PathfindingResult result, List<PNode> nodes);
+}

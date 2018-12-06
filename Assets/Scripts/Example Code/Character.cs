@@ -1,5 +1,6 @@
 ﻿
 using System.Collections.Generic;
+using ThreadedPathfinding;
 using UnityEngine;
 
 /// <summary>
