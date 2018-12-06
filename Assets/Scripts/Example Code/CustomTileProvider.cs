@@ -1,4 +1,6 @@
 ﻿
+using UnityEngine;
+
 public class CustomTileProvider : TileProvider
 {
     private Map map;
@@ -11,7 +13,6 @@ public class CustomTileProvider : TileProvider
     public override bool IsTileWalkable(int x, int y)
     {
         bool solid = map.Tiles[x, y];
-
         return solid == false;
     }
 }

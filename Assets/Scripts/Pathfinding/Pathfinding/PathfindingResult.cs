@@ -9,5 +9,6 @@ public enum PathfindingResult : byte
     ERROR_PATH_TOO_LONG,
     ERROR_START_NOT_WALKABLE,
     ERROR_END_NOT_WALKABLE,
+    ERROR_PATH_NOT_FOUND,
     ERROR_INTERNAL
 }

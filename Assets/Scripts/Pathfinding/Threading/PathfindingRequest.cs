@@ -2,19 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 public class PathfindingRequest
 {
     private static Queue<PathfindingRequest> Pooled = new Queue<PathfindingRequest>();
 
-    public List<PNode> OutputPath { get; set; }
     public int StartX { get; private set; }
     public int StartY { get; private set; }
     public int EndX { get; private set; }
     public int EndY { get; private set; }
     public PathFound ReturnEvent { get; private set; }
 
-    public static PathfindingRequest Create(int startX, int startY, int endX, int endY, PathFound foundEvent, List<PNode> outputPath = null)
+    public List<PNode> ExistingList { get; private set; }
+
+    public static PathfindingRequest Create(int startX, int startY, int endX, int endY, PathFound foundEvent, List<PNode> existingList = null)
     {
         PathfindingRequest r;
         if(Pooled.Count > 0)
@@ -24,25 +26,12 @@ public class PathfindingRequest
             r.StartY = startY;
             r.EndX = endX;
             r.EndY = endY;
-            if (r.OutputPath == null)
-            {
-                if(outputPath != null)
-                {
-                    r.OutputPath = outputPath;
-                }
-                else
-                {
-                    r.OutputPath = new List<PNode>();
-                }
-            }
+            r.ReturnEvent = foundEvent;
+            r.ExistingList = existingList;
         }
         else
         {
-            if(outputPath == null)
-            {
-                outputPath = new List<PNode>();
-            }
-            r = new PathfindingRequest(startX, startY, endX, endY, foundEvent, outputPath);
+            r = new PathfindingRequest(startX, startY, endX, endY, foundEvent, existingList);
         }
 
         if(PathfindingManager.Instance != null)
@@ -53,13 +42,14 @@ public class PathfindingRequest
         return r;
     }
 
-    private PathfindingRequest(int x, int y, int ex, int ey, PathFound foundEvent, List<PNode> outputPath = null)
+    private PathfindingRequest(int x, int y, int ex, int ey, PathFound foundEvent, List<PNode> existing = null)
     {
         this.StartX = x;
         this.StartY = y;
         this.EndX = ex;
         this.EndY = ey;
         this.ReturnEvent = foundEvent;
+        this.ExistingList = existing;
     }
 
     /// <summary>
@@ -68,8 +58,8 @@ public class PathfindingRequest
     /// </summary>
     public void Dispose()
     {
+        ReturnEvent = null;
         if(!Pooled.Contains(this))
             Pooled.Enqueue(this);
-        OutputPath = null;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 public class PathfindingManager : MonoBehaviour
@@ -27,11 +28,16 @@ public class PathfindingManager : MonoBehaviour
     [Range(1, 16)]
     public int ThreadCount = 1;
 
+    [Header("Debug")]
+    [TextArea(20, 20)]
+    public string Info;
+
     public object QueueLock = new object(); // The lock for adding to and removing from the processing queue.
     public object ReturnLock = new object(); // The lock for adding to and removing from the return queue.
     private PathfindingThread[] threads;
     private List<PathfindingRequest> pending = new List<PathfindingRequest>();
     private List<PathReturn> toReturn = new List<PathReturn>();
+    private StringBuilder str = new StringBuilder();
 
     public void Awake()
     {
@@ -100,7 +106,10 @@ public class PathfindingManager : MonoBehaviour
             foreach (var item in toReturn)
             {
                 if(item.Callback != null)
+                {
+                    //Debug.Log("Returned! to " + item.Callback.Target);
                     item.Callback.Invoke(item.Result, item.Path);
+                }
             }
             toReturn.Clear();
         }
@@ -111,9 +120,58 @@ public class PathfindingManager : MonoBehaviour
         if (threads == null || threads.Length == 0)
             return;
 
+# if UNITY_EDITOR
+        // Compile debug information.
+        str.Append("Overall work strain: ");
+        float sum = 0f;
+        for (int i = 0; i < threads.Length; i++)
+        {
+            float w = threads[i].AproximateWork;
+            sum += w;
+        }
+        sum /= threads.Length;
+        str.Append((sum * 100f).ToString("N0"));
+        str.Append("%");
+        str.AppendLine();
+        str.AppendLine();
+        str.Append("Requests this frame: ");
+        str.Append(pending.Count);
+        str.AppendLine();
+        str.Append("Pending returns: ");
+        str.Append(toReturn.Count);
+        str.AppendLine();
+        for (int i = 0; i < threads.Length; i++)
+        {
+            var t = threads[i];
+            int count = t.Queue.Count;
+            long time = t.LatestTime;
+            float work = t.AproximateWork;
+
+            str.Append("Thread #");
+            str.Append(i);
+            str.Append(": ");
+            str.AppendLine();
+            str.Append("  -");
+            str.Append(count);
+            str.Append(" pending requests.");
+            str.AppendLine();
+            str.Append("  -Last path time: ");
+            str.Append(time);
+            str.Append("ms");
+            str.AppendLine();
+            str.Append("  -Aprox. work: ");
+            str.Append((work * 100f).ToString("N0"));
+            str.Append("%");
+            str.AppendLine();
+        }
+
+        this.Info = str.ToString();
+        str.Length = 0;
+#endif
+
         // Lock because the number of pending requests for each thread should not change.
         // Hopefully this lock should last no more than a millisecond at most, probably less.
-        lock (ReturnLock)
+        lock (QueueLock)
         {
             foreach (var request in pending)
             {
@@ -131,10 +189,9 @@ public class PathfindingManager : MonoBehaviour
 
                 // Enqueue it on this thread.
                 t.Queue.Enqueue(request);
-                Debug.Log("Enqueued request onto thread #" + t.ThreadNumber);
             }
             pending.Clear();
-        }        
+        }       
     }
 
     public void CreateThreads(int number)

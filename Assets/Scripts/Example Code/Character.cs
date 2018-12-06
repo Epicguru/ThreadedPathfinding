@@ -37,6 +37,8 @@ public class Character : MonoBehaviour
     {
         if (CurrentRequest != null)
             return;
+        if (currentPath == null)
+            return;
 
         movementTimer += Time.deltaTime;
 
@@ -44,20 +46,29 @@ public class Character : MonoBehaviour
         PNode nextNode = currentPath[previousNodeIndex + 1];
         float dst = GetDistance(previousNode, nextNode);
 
-        float progress = Mathf.Clamp01(dst / movementTimer * MovementSpeed);
+        float progress = Mathf.Clamp01((movementTimer * MovementSpeed) / dst);
         if(progress == 1f)
         {
-            previousNodeIndex++;
-            if(previousNodeIndex == currentPath.Count)
+            // Update our position to the position we just reached.
+            this.X = nextNode.X;
+            this.Y = nextNode.Y;
+
+            if (previousNodeIndex == currentPath.Count - 2)
             {
                 // Reached the end of the path. Request a new path...
                 // Setting current request also stops us from moving, see the first line of Update.
                 CurrentRequest = CreateNewRequest();
             }
+            else
+            {
+                previousNodeIndex++;
+                movementTimer = 0f;                
+            }
         }
 
         // Set position. Note that PNode can be used as a Vector. Useful and clean.
         transform.position = Vector2.Lerp(previousNode, nextNode, progress);
+        transform.Translate(0f, 0f, -1f); // Move towards the camera.
     }
 
     private float GetDistance(PNode a, PNode b)
@@ -100,7 +111,7 @@ public class Character : MonoBehaviour
         }
 
         // Create the request, with the callback method being UponPathCompleted.
-        var request = PathfindingRequest.Create(X, Y, endX, endY, UponPathCompleted);
+        var request = PathfindingRequest.Create(X, Y, endX, endY, UponPathCompleted, currentPath);
 
         return request;
     }
@@ -111,16 +122,24 @@ public class Character : MonoBehaviour
         // This means that the request has completed, so it is important to dispose of it now.
         CurrentRequest.Dispose();
         CurrentRequest = null;
+        
 
         // Check the result...
         if(result != PathfindingResult.SUCCESSFUL)
         {
-            Debug.LogWarning("Pathfinding failed: " + result);
+            // Debug.LogWarning("Pathfinding failed: " + result);
+
+            // Most likely is that it was impossible to find a route from the start to end.
+            // Request a new path then, hopefully this time it won't be a failure.
+            CurrentRequest = CreateNewRequest();
+
         }
         else
         {
-            // Do something with the calculated path...
+            // Apply the path that was just calculated.
             currentPath = path;
+            previousNodeIndex = 0;
+            movementTimer = 0f;
         }
     }
 }

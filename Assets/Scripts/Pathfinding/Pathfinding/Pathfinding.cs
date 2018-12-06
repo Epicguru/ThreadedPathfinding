@@ -1,5 +1,6 @@
 ﻿using Priority_Queue;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class Pathfinding
 {
@@ -89,7 +90,7 @@ public class Pathfinding
             var neighbours = GetNear(current, provider);
             foreach (PNode n in neighbours)
             {
-                float newCost = costSoFar[current] + GetCost(current, n); // Note that this could change depending on speed changes per-tile.
+                float newCost = costSoFar[current] + GetCost(current, n); // Note that this could change depending on speed changes per-tile. Currently not implemented.
 
                 if(!costSoFar.ContainsKey(n) || newCost < costSoFar[n])
                 {
@@ -102,13 +103,15 @@ public class Pathfinding
         }
 
         path = null;
-        return PathfindingResult.ERROR_INTERNAL;
+        return PathfindingResult.ERROR_PATH_NOT_FOUND;
     }
 
     private List<PNode> TracePath(PNode end, List<PNode> path)
     {
-        if(path == null)
+        if (path == null)
             path = new List<PNode>();
+        else
+            path.Clear();
         PNode child = end;
 
         bool run = true;
@@ -181,7 +184,7 @@ public class Pathfinding
 
         // Left
         left = false;
-        if (provider.IsTileWalkable(node.X - 1, node.Y))
+        if (provider.TileInBounds(node.X - 1, node.Y) && provider.IsTileWalkable(node.X - 1, node.Y))
         {
             near.Add(PNode.Create(node.X - 1, node.Y));
             left = true;
@@ -189,7 +192,7 @@ public class Pathfinding
 
         // Right
         right = false;
-        if (provider.IsTileWalkable(node.X + 1, node.Y))
+        if (provider.TileInBounds(node.X + 1, node.Y) && provider.IsTileWalkable(node.X + 1, node.Y))
         {
             near.Add(PNode.Create(node.X + 1, node.Y));
             right = true;
@@ -197,7 +200,7 @@ public class Pathfinding
 
         // Above
         above = false;
-        if (provider.IsTileWalkable(node.X, node.Y + 1))
+        if (provider.TileInBounds(node.X, node.Y + 1) && provider.IsTileWalkable(node.X, node.Y + 1))
         {
             near.Add(PNode.Create(node.X, node.Y + 1));
             above = true;
@@ -205,7 +208,7 @@ public class Pathfinding
 
         // Below
         below = false;
-        if (provider.IsTileWalkable(node.X, node.Y - 1))
+        if (provider.TileInBounds(node.X, node.Y - 1) && provider.IsTileWalkable(node.X, node.Y - 1))
         {
             near.Add(PNode.Create(node.X, node.Y - 1));
             below = true;
@@ -214,7 +217,7 @@ public class Pathfinding
         // Above-Left
         if (left && above)
         {
-            if (provider.IsTileWalkable(node.X - 1, node.Y + 1))
+            if (provider.TileInBounds(node.X - 1, node.Y + 1) && provider.IsTileWalkable(node.X - 1, node.Y + 1))
             {
                 near.Add(PNode.Create(node.X - 1, node.Y + 1));
             }
@@ -223,7 +226,7 @@ public class Pathfinding
         // Above-Right
         if (right && above)
         {
-            if (provider.IsTileWalkable(node.X + 1, node.Y + 1))
+            if (provider.TileInBounds(node.X + 1, node.Y + 1) && provider.IsTileWalkable(node.X + 1, node.Y + 1))
             {
                 near.Add(PNode.Create(node.X + 1, node.Y + 1));
             }
@@ -232,7 +235,7 @@ public class Pathfinding
         // Below-Left
         if (left && below)
         {
-            if (provider.IsTileWalkable(node.X - 1, node.Y - 1))
+            if (provider.TileInBounds(node.X - 1, node.Y - 1) && provider.IsTileWalkable(node.X - 1, node.Y - 1))
             {
                 near.Add(PNode.Create(node.X - 1, node.Y - 1));
             }
@@ -241,7 +244,7 @@ public class Pathfinding
         // Below-Right
         if (right && below)
         {
-            if (provider.IsTileWalkable(node.X + 1, node.Y - 1))
+            if (provider.TileInBounds(node.X + 1, node.Y - 1) && provider.IsTileWalkable(node.X + 1, node.Y - 1))
             {
                 near.Add(PNode.Create(node.X + 1, node.Y - 1));
             }

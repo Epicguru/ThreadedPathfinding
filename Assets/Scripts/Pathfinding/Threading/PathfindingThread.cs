@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -18,13 +19,22 @@ public class PathfindingThread
     public bool Run { get; private set; }
     public Queue<PathfindingRequest> Queue = new Queue<PathfindingRequest>();
     public Pathfinding Pathfinder;
+    public long LatestTime;
+    public float AproximateWork;
+    public long TimeThisSecond;
+
     private PathfindingManager manager;
-    
+    private System.Diagnostics.Stopwatch watch;
+    private System.Diagnostics.Stopwatch secondWatch;
+
+
     public PathfindingThread(PathfindingManager m, int number)
     {
         this.ThreadNumber = number;
         this.manager = m;
         this.Pathfinder = new Pathfinding();
+        this.watch = new System.Diagnostics.Stopwatch();
+        this.secondWatch = new System.Diagnostics.Stopwatch();
     }
 
     public void StartThread()
@@ -47,41 +57,60 @@ public class PathfindingThread
         int number = (int)n;
         Debug.Log("Started pathfinding thread #" + number);
 
+        secondWatch.Start();
+
         while (Run)
         {
-            int count = Queue.Count;
-            if(count == 0)
+            try
             {
-                Thread.Sleep(IDLE_SLEEP);
+                if(secondWatch.ElapsedMilliseconds >= 1000)
+                {
+                    secondWatch.Reset();
+                    secondWatch.Start();
+                    AproximateWork = Mathf.Clamp01(TimeThisSecond / 1000f);
+                    TimeThisSecond = 0;
+                }
+
+                int count = Queue.Count;
+                if (count == 0)
+                {
+                    Thread.Sleep(IDLE_SLEEP);
+                }
+                else
+                {
+                    // Lock to prevent simultaneous read and write.
+                    PathfindingRequest request;
+                    lock (manager.QueueLock)
+                    {
+                        request = Queue.Dequeue();
+                    }
+
+                    if (request == null)
+                    {
+                        // Very ocassionally happens. Nothing to worry about :)
+                        continue;
+                    }
+
+                    List<PNode> l;
+                    watch.Reset();
+                    watch.Start();
+                    var result = Pathfinder.Run(request.StartX, request.StartY, request.EndX, request.EndY, manager.Provider, request.ExistingList, out l);
+                    watch.Stop();
+                    LatestTime = watch.ElapsedMilliseconds;
+                    TimeThisSecond += LatestTime;
+
+                    // Got the results, now enqueue them to be given back to the main thread. The called method automatically locks.         
+                    manager.AddResponse(new PathReturn() { Callback = request.ReturnEvent, Path = l, Result = result });
+                }
             }
-            else
+            catch(Exception e)
             {
-                // Lock to prevent simultaneous read and write.
-                PathfindingRequest request;
-                Debug.Log("Locking for dequeue...");
-                lock (manager.QueueLock)
-                {
-                    request = Queue.Dequeue();
-                }
-                Debug.Log("Finished lock, request is " + request);
-
-                if(request == null)
-                {
-                    // Very ocassionally happens. Nothing to worry about :)
-                    continue;
-                }
-
-                Debug.Log("Starting pathfinding run...");
-                List<PNode> l;
-                var result = Pathfinder.Run(request.StartX, request.StartY, request.EndX, request.EndY, manager.Provider, request.OutputPath, out l);
-
-                Debug.Log("Processed request on thread #" + number);
-
-                // Got the results, now enqueue them to be given back to the main thread. The called method automatically locks.         
-                manager.AddResponse(new PathReturn() { Callback = request.ReturnEvent, Path = l, Result = result });                
+                Debug.Log("Exception in pathfinding thread #" + number + "! Execution on this thread will attempt to continue as normal. See:");
+                Debug.LogError(e);
             }
         }
 
+        secondWatch.Stop();
         Debug.Log("Stopped pathfinding thread #" + number);
     }
 }

@@ -9,6 +9,8 @@ public class PNode : FastPriorityQueueNode
 
     public static PNode Create(int x, int y)
     {
+        // Unfortunately, I can't find any reasonable way to implement pooling.
+        // It would have to work accross multiple threads at one, and more imporantly, still inherit from FastPriorityQueueNode and not break the HSPQ system.
         return new PNode(x, y);
     }
 
