@@ -43,7 +43,7 @@ public class PathfindingManager : MonoBehaviour
 
     [Header("Threading Settings")]
     [Range(1, 16)]
-    public int ThreadCount = 1;
+    public int ThreadCount = 2;
 
     [Header("Debug")]
     [TextArea(20, 20)]
@@ -126,6 +126,10 @@ public class PathfindingManager : MonoBehaviour
                 {
                     //Debug.Log("Returned! to " + item.Callback.Target);
                     item.Callback.Invoke(item.Result, item.Path);
+                }
+                else
+                {
+                    // Object must have been destroyed...
                 }
             }
             toReturn.Clear();

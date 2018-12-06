@@ -28,7 +28,9 @@ public class Map : MonoBehaviour
     // The data structure to reprensent the tiles. True means wall, false means air.
     public bool[,] Tiles;
 
-    private List<GameObject> walls = new List<GameObject>();
+    // Ignore these.
+    private Dictionary<int, GameObject> walls = new Dictionary<int, GameObject>();
+    private List<Character> characters = new List<Character>();
 
     public void Awake()
     {
@@ -55,7 +57,9 @@ public class Map : MonoBehaviour
 
     private void OnGUI()
     {
-        GUILayout.Label("Click in the gray area to place walls. Avoid creating closed regions.");
+        GUILayout.Label("Left click in the gray area to place walls.");
+        GUILayout.Label("Right click to remove.");
+        GUILayout.Label("<b>Avoid creating closed regions.</b>");
         bool clear = GUILayout.Button("Clear map");
         if (clear)
         {
@@ -68,14 +72,26 @@ public class Map : MonoBehaviour
             }
             foreach (var item in walls)
             {
-                Destroy(item);
+                Destroy(item.Value);
             }
             walls.Clear();
         }
         
         bool spawn = GUILayout.Button("Spawn " + CharacterCount + " characters");
         if (spawn)
+        {
             SpawnCharacters();
+        }
+
+        bool despawn = GUILayout.Button("Clear all characters");
+        if (despawn)
+        {
+            foreach (var item in characters)
+            {
+                Destroy(item.gameObject);
+            }
+            characters.Clear();
+        }
     }
 
     private bool GetSolidRelative(PNode current, int rx, int ry)
@@ -98,8 +114,9 @@ public class Map : MonoBehaviour
     private void Update()
     {
         bool mouseClicked = Input.GetMouseButton(0);
+        bool mouseClicked2 = Input.GetMouseButton(1);
 
-        Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition, Camera.MonoOrStereoscopicEye.Mono);
+        Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition) + new Vector3(0.5f, 0.5f);
 
         int x = (int)mousePos.x;
         int y = (int)mousePos.y;
@@ -114,13 +131,29 @@ public class Map : MonoBehaviour
                     SpawnTile(x, y);
                 }
             }
+            else if (mouseClicked2)
+            {
+                if (Tiles[x, y])
+                {
+                    Tiles[x, y] = false;
+                    RemoveTile(x, y);
+                }
+            }
         }
     }
 
     private void SpawnTile(int x, int y)
     {
         Vector3 position = new Vector3(x, y, 0f);
-        walls.Add(Instantiate(TilePrefab, position, Quaternion.identity, this.transform));
+        int index = y * Width + x;
+        walls.Add(index, Instantiate(TilePrefab, position, Quaternion.identity, this.transform));
+    }
+
+    private void RemoveTile(int x, int y)
+    {
+        int index = y * Width + x;
+        Destroy(walls[index]);
+        walls.Remove(y * Width + x);
     }
 
     private void SpawnAllTiles()
@@ -165,6 +198,8 @@ public class Map : MonoBehaviour
             spawned.Y = y;
             spawned.transform.position = new Vector3(x, y, 0f);
             spawned.Map = this;
+
+            characters.Add(spawned);
         }
     }
 }

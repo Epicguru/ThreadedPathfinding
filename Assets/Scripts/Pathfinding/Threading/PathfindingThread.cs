@@ -91,6 +91,11 @@ namespace ThreadedPathfinding.Internal
                             // Very ocassionally happens. Nothing to worry about :)
                             continue;
                         }
+                        if(request.ReturnEvent == null)
+                        {
+                            // Object that requested it has been destroyed. No need to calculate path.
+                            continue;
+                        }
 
                         List<PNode> l;
                         watch.Reset();
@@ -100,7 +105,7 @@ namespace ThreadedPathfinding.Internal
                         LatestTime = watch.ElapsedMilliseconds;
                         TimeThisSecond += LatestTime;
 
-                        // Got the results, now enqueue them to be given back to the main thread. The called method automatically locks.         
+                        // Got the results, now enqueue them to be given back to the main thread. The method automatically locks.         
                         manager.AddResponse(new PathReturn() { Callback = request.ReturnEvent, Path = l, Result = result });
                     }
                 }

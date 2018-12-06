@@ -419,7 +419,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   AutoCreateThreads: 1
   AutoStartThreads: 1
-  ThreadCount: 1
+  ThreadCount: 4
   Info: 
 --- !u!4 &1850237375
 Transform:
