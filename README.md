@@ -27,10 +27,10 @@ In order for this to work, a TileProvider must be created. A TileProvider is the
 Unfortunately, since this is a multithreaded system, writing code for it is more complex than a synchronous system, but of course it runs faster and does't affect frame rate.
 
 ## Setting up
-First, it is important that you already have some kind of 2D tile based map set up. As a very minimum, _you should be able to instantly determine weather a tile at a particular coordinate is solid or not (as in, can it be walked through/over)_.
+First, it is important that you already have some kind of 2D tile based map set up. At the very minimum, _you should be able to instantly determine weather a tile at a particular coordinate is solid or not (as in, can it be walked through/over)_.
 
 ### In the editor
-Once you have done the instalation steps, open your project.
+Once you have done the installation steps, open your project.
 Open your game scene and then press this menu button in the editor:
 
 ![Create Pathfinding Manager](https://github.com/Epicguru/ThreadedPathfinding/blob/master/Documentation%20Images/CreateManagerButton.png?raw=true)
@@ -109,7 +109,7 @@ using ThreadedPathfinding;
 public class Character : MonoBehaviour
 {
   // Stores the currently active request.
-  private PathFindingRequest CurrentRequest;
+  private PathfindingRequest CurrentRequest;
   
   void Start()
   {
@@ -158,4 +158,4 @@ This uses [BlueRaja's](https://github.com/BlueRaja/High-Speed-Priority-Queue-for
 I can't guarantee that this is bug-free, or that it will necessarily work for you. I've done my best to test and optimize this, but it is far from perfect. If you find any bugs, report them here on Github by opening an issue.
 
 ## Contribution
-Any contiribution is welcome. If you make any changes that you think other people would benefit from, create a Pull Request and I'll merge it as soon as possible. 
+Any contributions is welcome. If you make any changes that you think other people would benefit from, create a Pull Request and I'll merge it as soon as possible. 
